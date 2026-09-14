@@ -2,14 +2,14 @@
 
 A phased checklist for building the F1 race strategy analyzer described in the project brief. Work top to bottom — each phase produces something demoable before moving on.
 
-## Phase 0 — Project setup
+## Phase 0 — Project setup ✅
 
-- [ ] `python -m venv .venv && source .venv/bin/activate`
-- [ ] `pip install fastf1 pandas matplotlib numpy`
-- [ ] `pip freeze > requirements.txt`
-- [ ] Create `.gitignore` (FastF1 cache dir, `.venv/`, `__pycache__/`, `.env`)
-- [ ] Enable FastF1 local cache: `fastf1.Cache.enable_cache('cache/')`
-- [ ] Sanity check: load one session end-to-end and print lap data
+- [x] `python -m venv .venv && source .venv/bin/activate`
+- [x] `pip install fastf1 pandas matplotlib numpy`
+- [x] `pip freeze > requirements.txt`
+- [x] Create `.gitignore` (FastF1 cache dir, `.venv/`, `__pycache__/`, `.env`)
+- [x] Enable FastF1 local cache: `fastf1.Cache.enable_cache('cache/')`
+- [x] Sanity check: load one session end-to-end and print lap data
   ```python
   import fastf1
   fastf1.Cache.enable_cache('cache/')
@@ -17,63 +17,63 @@ A phased checklist for building the F1 race strategy analyzer described in the p
   session.load()
   print(session.laps.head())
   ```
-- [ ] Confirm `session.laps`, `session.weather_data`, and `session.results` are all populated
+- [x] Confirm `session.laps`, `session.weather_data`, and `session.results` are all populated
 
-## Phase 1 — Data layer (`src/data/`)
+## Phase 1 — Data layer (`src/data/`) ✅
 
-- [ ] `loader.py`: wrapper around `fastf1.get_session(year, gp, session_type)` + `.load()`, with cache dir configurable
-- [ ] `cleaning.py`: helpers to
-  - [ ] flag in/out laps (`Lap.PitInTime` / `PitOutTime` not null)
-  - [ ] flag laps under Safety Car / VSC / Red Flag (via `TrackStatus`)
-  - [ ] drop/flag laps with no valid `LapTime` (deleted laps, `IsAccurate == False`)
-- [ ] `models.py` (optional): typed dataclasses/pydantic models for `Stint`, `PitStop`, `Lap` if you want cleaner interfaces than raw DataFrames
-- [ ] Unit test: load a known race, assert lap count and pit stop count match public record for one driver
+- [x] `loader.py`: wrapper around `fastf1.get_session(year, gp, session_type)` + `.load()`, with cache dir configurable
+- [x] `cleaning.py`: helpers to
+  - [x] flag in/out laps (`Lap.PitInTime` / `PitOutTime` not null)
+  - [x] flag laps under Safety Car / VSC / Red Flag (via `TrackStatus`)
+  - [x] drop/flag laps with no valid `LapTime` (deleted laps, `IsAccurate == False`)
+- [x] `models.py`: typed dataclasses for `Stint`, `PitStop`
+- [x] Unit test: load a known race, assert lap count and pit stop count match public record for one driver
 
-## Phase 2 — Feature 1: Stint visualization
+## Phase 2 — Feature 1: Stint visualization ✅
 
-- [ ] Derive stints per driver: group laps by `Stint` number, get compound + lap range per stint
-- [ ] Build horizontal timeline chart (matplotlib `barh`), one row per driver
-  - [ ] Color by compound (soft=red, medium=yellow, hard=white/grey, inter=green, wet=blue)
-  - [ ] Mark pit stop boundaries between stints
-  - [ ] Sort drivers by finishing position
-- [ ] Save chart as PNG for README
-- [ ] **Checkpoint:** this chart alone is your first shareable artifact — grab a screenshot
+- [x] Derive stints per driver: group laps by `Stint` number, get compound + lap range per stint
+- [x] Build horizontal timeline chart (matplotlib `barh`), one row per driver
+  - [x] Color by compound (soft=red, medium=yellow, hard=white/grey, inter=green, wet=blue)
+  - [x] Mark pit stop boundaries between stints
+  - [x] Sort drivers by finishing position
+- [x] Save chart as PNG for README
+- [x] **Checkpoint:** this chart alone is your first shareable artifact — grab a screenshot
 
-## Phase 3 — Feature 2: Pace degradation analysis
+## Phase 3 — Feature 2: Pace degradation analysis ✅
 
-- [ ] Filter laps: exclude in/out laps, SC/VSC laps, inaccurate laps (reuse Phase 1 cleaning)
-- [ ] Per stint, fit trend line (linear first, quadratic optional) of `LapTime` vs. `LapNumber within stint`
-- [ ] Report degradation as seconds/lap per compound, aggregated across drivers and per-driver
-- [ ] Visualize: scatter of clean laps + fitted trend line, faceted by compound or by driver
-- [ ] Sanity-check against known narratives (e.g. "softs degrade faster than hards") to validate the filtering logic is actually working
-- [ ] **Checkpoint:** write down 2-3 sentences of findings for a specific race — this is the "real learning" the brief calls out
+- [x] Filter laps: exclude in/out laps, SC/VSC laps, inaccurate laps (reuse Phase 1 cleaning)
+- [x] Per stint, fit trend line (linear) of `LapTime` vs. `TyreLife` (tyre age within stint)
+- [x] Report degradation as seconds/lap per compound, aggregated across drivers and per-driver
+- [x] Visualize: scatter of clean laps + fitted trend line, faceted by driver/stint
+- [x] Sanity-check against known narratives — Monza 2023: Medium +0.023 s/lap, Hard +0.026 s/lap field-wide, consistent with a low-degradation track
+- [x] **Checkpoint:** findings written up in README ("Example findings" section)
 
-## Phase 4 — Feature 3: Race pace comparison
+## Phase 4 — Feature 3: Race pace comparison ✅
 
-- [ ] Compute rolling average lap time (e.g. window=3) per driver across the full race
-- [ ] Line chart: rolling pace for 2+ selected drivers overlaid, x-axis = lap number
-- [ ] Annotate pit stops on the chart (vertical markers or shaded bands)
-- [ ] Identify and label "crossover" points where relative pace order flips
-- [ ] Wire up a simple CLI or notebook param so any two drivers can be compared
+- [x] Compute rolling average lap time (window=3) per driver across the full race
+- [x] Line chart: rolling pace for 2+ selected drivers overlaid, x-axis = lap number
+- [x] Annotate pit stops on the chart (vertical markers)
+- [x] Identify and label "crossover" points where relative pace order flips (with min-gap noise filtering)
+- [x] Wire up a CLI-style param block (`DRIVERS`, `WINDOW`) so any two drivers can be compared
 
-## Phase 5 — Feature 4: Pit stop summary
+## Phase 5 — Feature 4: Pit stop summary ✅
 
-- [ ] Extract pit stop events: lap, in/out time, stationary duration (from `PitInTime`/`PitOutTime` deltas)
-- [ ] Compute position before/after each stop (delta from `session.laps` position column)
-- [ ] Model the "pit loss" delta — track-specific baseline time lost vs. staying out (research typical pit lane time loss for the circuit, or estimate from the field's out-lap vs. in-lap pace)
-- [ ] Build summary table: driver, lap, duration, position change, estimated time lost
-- [ ] Render as a formatted table (pandas `to_markdown()` or a simple HTML table)
+- [x] Extract pit stop events: lap, in/out time, stationary duration (from `PitInTime`/`PitOutTime` deltas)
+- [x] Compute position before/after each stop (from `session.laps` position column)
+- [x] Model the "pit loss" delta — estimated as (in-lap time − median clean lap) + (out-lap time − median clean lap)
+- [x] Build summary table: driver, lap, duration, position change, estimated time lost
+- [x] Render as a formatted table and export to CSV
 
-## Phase 6 — Polish & README
+## Phase 6 — Polish & README ✅
 
-- [ ] Write `README.md` with:
-  - [ ] Project description + motivation
-  - [ ] Screenshot from Phase 2 (stint chart) front and center
-  - [ ] Setup instructions (venv, pip install, FastF1 cache note)
-  - [ ] Example usage / CLI commands
-  - [ ] Methodology notes: how degradation is modeled, how pit delta is estimated, what filtering is applied and why
-- [ ] Add `requirements.txt` (finalized)
-- [ ] Basic tests for cleaning logic (Phase 1) and degradation fit (Phase 3)
+- [x] Write `README.md` with:
+  - [x] Project description + motivation
+  - [x] Screenshot from Phase 2 (stint chart) front and center
+  - [x] Setup instructions (venv, pip install, FastF1 cache note)
+  - [x] Example usage / CLI commands
+  - [x] Methodology notes: how degradation is modeled, how pit delta is estimated, what filtering is applied and why
+- [x] Add `requirements.txt` (finalized)
+- [x] Tests for cleaning logic (Phase 1), degradation fit (Phase 3), pace (Phase 4), and pit stops (Phase 5) — 13 tests passing
 
 ---
 
