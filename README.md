@@ -34,6 +34,7 @@ python3 scripts/generate_stint_chart.py      # strategy chart -> output/stint_ch
 python3 scripts/analyze_degradation.py       # degradation chart + printed summary
 python3 scripts/compare_pace.py              # pace comparison chart + crossover laps
 python3 scripts/pit_stop_summary.py          # pit stop table -> output/pitstops_<year>_<event>.csv
+python3 scripts/whatif_strategy.py           # strategy what-if: actual vs. hypothetical stop counts
 ```
 
 Run the test suite (uses the same cached session data):
@@ -54,11 +55,14 @@ python3 -m pytest tests/ -v
 
 **Edge cases.** A driver who retires mid-pit-stop (see OCO, 2023 Monza, lap 39) has an in-lap but no out-lap — `position_after` and `time_lost_s` correctly come back as `None` rather than a fabricated value. A driver marked "Did Not Start" (see TSU, same race) has zero laps and renders as an empty row on the stint chart rather than being dropped silently.
 
+**Strategy what-if (stretch).** Given a hypothetical strategy — a list of `(compound, stint_length)` pairs — `src/analysis/whatif.py` predicts total race time by summing `intercept + slope * tyre_age` (from the driver's own fitted degradation model, falling back to the field-wide average for compounds the driver never actually raced on) across every stint, plus the field-wide average pit loss per stop. As a self-consistency check, replaying a driver's *actual* stint lengths and compounds reproduces their real total race time to within a second. This model has no concept of traffic, safety car timing, or track position, so it can say whether a strategy family was faster *on pure pace* but not whether it would have won the race — an undercut's real value, for instance, comes from the position it gains, which isn't modeled at all.
+
 ## Example findings — 2023 Italian Grand Prix
 
 - **Degradation was low across the board**: Medium averaged +0.023 s/lap, Hard +0.026 s/lap field-wide — consistent with Monza's low-abrasion surface and why most of the field ran a single stop.
 - **Pit stops cost ~24-26s** of race time for most drivers (Monza has one of the shortest pit lanes on the calendar); Piastri's lap-41 stop was a clear outlier at ~34s lost.
 - **VER vs. PER pace comparison** shows six genuine lead changes in relative pace across the race, with Verstappen fading on old hards in the final laps while Pérez — who pitted a lap later — held stronger late pace.
+- **What-if: would a two-stop have beaten VER's actual one-stop?** No — the simulator predicts a two-stop (M17/H17/H17) would have cost an extra ~11 seconds of race time versus the actual M20/H31 one-stop, since Monza's low degradation doesn't offset the cost of a second ~24s pit stop. This matches the real strategic consensus for that race.
 
 ## Project structure
 
@@ -76,6 +80,6 @@ f1-strategy-analyzer/
 
 ## Roadmap
 
-- [ ] **Strategy "what-if"** — use the degradation + pit loss models to estimate whether an alternate strategy (e.g. one-stop vs. the actual two-stop) would have been faster.
+- [x] **Strategy "what-if"** — use the degradation + pit loss models to estimate whether an alternate strategy would have been faster. See `scripts/whatif_strategy.py`.
 - [ ] **Multi-race views** — track how a driver's strategy and tyre management evolve across a season.
 - [ ] **Web frontend** — FastAPI + React app with race/driver pickers, wrapping the existing analysis modules.

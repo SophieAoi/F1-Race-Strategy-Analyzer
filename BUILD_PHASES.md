@@ -77,11 +77,13 @@ A phased checklist for building the F1 race strategy analyzer described in the p
 
 ---
 
-## Stretch Phase A — Strategy "what-if" simulator
+## Stretch Phase A — Strategy "what-if" simulator ✅
 
-- [ ] Given the degradation model (Phase 3) + pit loss model (Phase 5), simulate alternate strategies (e.g. 1-stop vs actual 2-stop) for a single driver
-- [ ] Output: predicted total race time for the alternate strategy vs. actual
-- [ ] Clearly document assumptions/limitations (no traffic modeling, no safety car timing, etc.) — this is what makes it credible rather than hand-wavy
+- [x] Given the degradation model (Phase 3) + pit loss model (Phase 5), simulate alternate strategies for a single driver
+- [x] Output: predicted total race time for the alternate strategy vs. actual
+- [x] Clearly document assumptions/limitations (no traffic modeling, no safety car timing, no track position) in README
+- [x] Self-consistency check: replaying the actual strategy reproduces actual race time to within ~1s
+- [x] Validated on 2023 Monza: two-stop alternate correctly predicted slower than VER's actual one-stop
 
 ## Stretch Phase B — Multi-race views
 
