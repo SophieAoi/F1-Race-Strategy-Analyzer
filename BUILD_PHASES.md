@@ -85,11 +85,12 @@ A phased checklist for building the F1 race strategy analyzer described in the p
 - [x] Self-consistency check: replaying the actual strategy reproduces actual race time to within ~1s
 - [x] Validated on 2023 Monza: two-stop alternate correctly predicted slower than VER's actual one-stop
 
-## Stretch Phase B — Multi-race views
+## Stretch Phase B — Multi-race views ✅
 
-- [ ] Loop loader across multiple rounds of a season for one driver
-- [ ] Aggregate: strategy choice per race, average degradation per compound across the season
-- [ ] Simple trend chart: how a driver's tire management evolved race-over-race
+- [x] Loop loader across multiple rounds of a season for one driver (`summarize_driver_season`, skips events that fail to resolve rather than aborting)
+- [x] Aggregate: strategy choice (stops, compounds) and average degradation per race
+- [x] Simple trend chart: degradation + pit stop count across races (`src/viz/season_chart.py`)
+- [x] Documented FastF1's event-name fuzzy-matching behavior and the traffic-vs-wear ambiguity in average degradation as real caveats in README
 
 ## Stretch Phase C — Web frontend
 

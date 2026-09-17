@@ -35,6 +35,7 @@ python3 scripts/analyze_degradation.py       # degradation chart + printed summa
 python3 scripts/compare_pace.py              # pace comparison chart + crossover laps
 python3 scripts/pit_stop_summary.py          # pit stop table -> output/pitstops_<year>_<event>.csv
 python3 scripts/whatif_strategy.py           # strategy what-if: actual vs. hypothetical stop counts
+python3 scripts/season_trend.py              # multi-race view: one driver's strategy across several rounds
 ```
 
 Run the test suite (uses the same cached session data):
@@ -57,12 +58,15 @@ python3 -m pytest tests/ -v
 
 **Strategy what-if (stretch).** Given a hypothetical strategy — a list of `(compound, stint_length)` pairs — `src/analysis/whatif.py` predicts total race time by summing `intercept + slope * tyre_age` (from the driver's own fitted degradation model, falling back to the field-wide average for compounds the driver never actually raced on) across every stint, plus the field-wide average pit loss per stop. As a self-consistency check, replaying a driver's *actual* stint lengths and compounds reproduces their real total race time to within a second. This model has no concept of traffic, safety car timing, or track position, so it can say whether a strategy family was faster *on pure pace* but not whether it would have won the race — an undercut's real value, for instance, comes from the position it gains, which isn't modeled at all.
 
+**Multi-race views (stretch).** `src/analysis/season.py` loops the existing per-race analysis (stints, degradation) across a list of events for one driver, so strategy and tyre management can be compared round-to-round. Two things worth knowing: FastF1 fuzzy-matches event name strings against the season schedule, so a typo'd or garbled name can silently resolve to *some* real event instead of raising an error — `summarize_driver_season` treats a genuinely unresolvable request (e.g. an out-of-range round number) as skippable rather than aborting the whole season summary, but it can't catch a *wrong-but-resolvable* name. Also, "average degradation" across a whole race can come out negative — this isn't a data error, it reflects a driver whose lap times got faster over a stint (e.g. clearing traffic after a poor qualifying) outweighing genuine tyre wear, as seen in VER's 2023 Singapore race below.
+
 ## Example findings — 2023 Italian Grand Prix
 
 - **Degradation was low across the board**: Medium averaged +0.023 s/lap, Hard +0.026 s/lap field-wide — consistent with Monza's low-abrasion surface and why most of the field ran a single stop.
 - **Pit stops cost ~24-26s** of race time for most drivers (Monza has one of the shortest pit lanes on the calendar); Piastri's lap-41 stop was a clear outlier at ~34s lost.
 - **VER vs. PER pace comparison** shows six genuine lead changes in relative pace across the race, with Verstappen fading on old hards in the final laps while Pérez — who pitted a lap later — held stronger late pace.
 - **What-if: would a two-stop have beaten VER's actual one-stop?** No — the simulator predicts a two-stop (M17/H17/H17) would have cost an extra ~11 seconds of race time versus the actual M20/H31 one-stop, since Monza's low degradation doesn't offset the cost of a second ~24s pit stop. This matches the real strategic consensus for that race.
+- **Season view: VER, Monza vs. Singapore 2023.** Monza (P1, one-stop) showed positive degradation (+0.044 s/lap) as expected on a normal race. Singapore (P5, one-stop) showed *negative* average degradation (-0.023 s/lap) — VER recovered from a poor qualifying and got progressively faster as he cleared traffic, which outweighs any real tyre wear in the average. A reminder that "average stint degradation" conflates two effects (tyre wear vs. traffic/track position) that a single linear fit can't separate.
 
 ## Project structure
 
@@ -81,5 +85,5 @@ f1-strategy-analyzer/
 ## Roadmap
 
 - [x] **Strategy "what-if"** — use the degradation + pit loss models to estimate whether an alternate strategy would have been faster. See `scripts/whatif_strategy.py`.
-- [ ] **Multi-race views** — track how a driver's strategy and tyre management evolve across a season.
+- [x] **Multi-race views** — track how a driver's strategy and tyre management evolve across a season. See `scripts/season_trend.py`.
 - [ ] **Web frontend** — FastAPI + React app with race/driver pickers, wrapping the existing analysis modules.
