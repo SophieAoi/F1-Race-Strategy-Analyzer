@@ -44,6 +44,34 @@ Run the test suite (uses the same cached session data):
 python3 -m pytest tests/ -v
 ```
 
+## Web app (stretch)
+
+A FastAPI backend wraps the analysis modules above as JSON endpoints, and a React frontend (Vite) consumes them with race/driver pickers.
+
+```bash
+# backend, from the project root
+uvicorn api.main:app --port 8010
+
+# frontend, in a second terminal
+cd frontend
+npm install
+npm run dev
+```
+
+Open the printed Vite URL (typically `http://localhost:5173`). If Vite picks a different port because 5173 is busy, add it to `allow_origins` in `api/main.py`.
+
+Endpoints:
+
+| Route | Returns |
+|---|---|
+| `GET /sessions?year=` | Race events for a season |
+| `GET /session/{year}/{event}/drivers` | Drivers, ordered by finishing position |
+| `GET /session/{year}/{event}/stints` | Stint data for the strategy chart |
+| `GET /session/{year}/{event}/pace?drivers=A,B` | Rolling pace + pit laps + crossovers for 1-2 drivers |
+| `GET /session/{year}/{event}/pitstops?driver=` | Pit stop summary, optionally filtered to one driver |
+
+The API keeps its own in-process cache (`api/session_cache.py`) on top of FastF1's disk cache, so a session loaded by one request isn't reprocessed by the next — FastF1's lap/timing parsing, not just the network fetch, is the slow part.
+
 ## Methodology notes
 
 **Lap cleaning.** Degradation and pace analysis both need to exclude laps that don't reflect genuine pace: pit in/out laps, laps run under Safety Car / VSC / yellow flags (detected via FastF1's `TrackStatus` codes, which concatenate every status active during the lap), and laps FastF1 itself flags as inaccurate or deleted. This filtering (`src/data/cleaning.py`) is applied before any trend fitting — skipping it produces wildly wrong degradation numbers, since an in-lap or SC lap can be 10-20+ seconds off normal pace and dominates a small least-squares fit.
@@ -74,10 +102,12 @@ python3 -m pytest tests/ -v
 f1-strategy-analyzer/
 ├── src/
 │   ├── data/        # FastF1 loading, caching, lap cleaning
-│   ├── analysis/    # degradation model, pace calcs, pit stop modeling
-│   └── viz/         # chart builders (stint, degradation, pace)
+│   ├── analysis/    # degradation model, pace calcs, pit stop modeling, what-if, season
+│   └── viz/         # chart builders (stint, degradation, pace, season)
+├── api/             # FastAPI app wrapping the analysis modules as JSON endpoints
+├── frontend/        # React (Vite) app: race/driver pickers + charts
 ├── scripts/         # runnable entry points for each analysis
-├── tests/           # pytest suite, validated against real race data
+├── tests/           # pytest suite, validated against real race data + API tests
 ├── output/          # generated charts and tables
 └── requirements.txt
 ```
@@ -86,4 +116,4 @@ f1-strategy-analyzer/
 
 - [x] **Strategy "what-if"** — use the degradation + pit loss models to estimate whether an alternate strategy would have been faster. See `scripts/whatif_strategy.py`.
 - [x] **Multi-race views** — track how a driver's strategy and tyre management evolve across a season. See `scripts/season_trend.py`.
-- [ ] **Web frontend** — FastAPI + React app with race/driver pickers, wrapping the existing analysis modules.
+- [x] **Web frontend** — FastAPI + React app with race/driver pickers, wrapping the existing analysis modules. See "Web app" above.

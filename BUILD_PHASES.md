@@ -92,19 +92,22 @@ A phased checklist for building the F1 race strategy analyzer described in the p
 - [x] Simple trend chart: degradation + pit stop count across races (`src/viz/season_chart.py`)
 - [x] Documented FastF1's event-name fuzzy-matching behavior and the traffic-vs-wear ambiguity in average degradation as real caveats in README
 
-## Stretch Phase C — Web frontend
+## Stretch Phase C — Web frontend ✅
 
-- [ ] `api/`: FastAPI app exposing endpoints for:
-  - [ ] `GET /sessions?year=&event=` — list available races
-  - [ ] `GET /session/{id}/stints` — stint chart data
-  - [ ] `GET /session/{id}/pace?drivers=` — pace comparison data
-  - [ ] `GET /session/{id}/pitstops` — pit stop table
-- [ ] Cache FastF1 loads server-side to avoid re-loading per request
-- [ ] `frontend/`: React app with
-  - [ ] Race/session picker
-  - [ ] Driver multi-select for pace comparison
-  - [ ] Chart components (recharts/visx) mirroring the matplotlib outputs
-- [ ] Deploy notes (even if just "run locally" for now)
+- [x] `api/`: FastAPI app exposing endpoints for:
+  - [x] `GET /sessions?year=` — list available races
+  - [x] `GET /session/{year}/{event}/drivers` — driver list, ordered by finishing position
+  - [x] `GET /session/{year}/{event}/stints` — stint chart data
+  - [x] `GET /session/{year}/{event}/pace?drivers=` — pace comparison data + crossovers
+  - [x] `GET /session/{year}/{event}/pitstops` — pit stop table
+- [x] Cache FastF1 loads server-side (`api/session_cache.py`, in-process LRU on top of FastF1's disk cache)
+- [x] `frontend/`: React (Vite) app with
+  - [x] Race/session picker
+  - [x] Driver pickers for pace comparison
+  - [x] Chart components (custom SVG stint chart, recharts pace chart) mirroring the matplotlib outputs
+- [x] 7 API tests (`tests/test_api.py`) using FastAPI's TestClient
+- [x] Verified end-to-end with Playwright: app renders real data with zero console errors across two different races
+- [x] Run locally: see README "Web app" section for both `uvicorn` and `npm run dev` commands
 
 ---
 
