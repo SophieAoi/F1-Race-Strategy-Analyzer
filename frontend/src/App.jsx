@@ -3,6 +3,7 @@ import { fetchDrivers, fetchPace, fetchPitStops, fetchSessions, fetchStints } fr
 import StintChart from "./StintChart";
 import PaceChart from "./PaceChart";
 import PitStopTable from "./PitStopTable";
+import RaceCar from "./RaceCar";
 import "./App.css";
 
 const YEAR = 2023;
@@ -51,11 +52,20 @@ export default function App() {
   }, [event, paceDrivers]);
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24, fontFamily: "sans-serif" }}>
-      <h1>F1 Strategy Analyzer</h1>
+    <div className="app-shell">
+      <header className="hero">
+        <div className="hero-text">
+          <p className="eyebrow">Race Engineering / Post-Race Breakdown</p>
+          <h1>F1 Strategy Analyzer</h1>
+          <p>Tyre strategy, pace degradation, and pit stop cost — broken down lap by lap.</p>
+        </div>
+        <div className="hero-car">
+          <RaceCar width={300} />
+        </div>
+      </header>
 
-      <label>
-        Race ({YEAR}):{" "}
+      <div className="race-picker">
+        Race ({YEAR})
         <select value={event} onChange={(e) => setEvent(e.target.value)}>
           {sessions.map((s) => (
             <option key={s.round} value={s.event}>
@@ -63,21 +73,23 @@ export default function App() {
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
-      {error && <p style={{ color: "#c00" }}>Error: {error}</p>}
+      {error && <div className="error-banner">Error: {error}</div>}
 
-      <section>
-        <h2>Tyre Strategy</h2>
-        {stintData ? <StintChart data={stintData} /> : <p>Loading...</p>}
+      <section className="panel">
+        <h2>Strategy</h2>
+        <p className="panel-title">Tyre Strategy</p>
+        {stintData ? <StintChart data={stintData} /> : <p className="loading-msg">Loading...</p>}
       </section>
 
-      <section>
-        <h2>Race Pace Comparison</h2>
-        <div style={{ display: "flex", gap: 12, marginBottom: 8 }}>
+      <section className="panel">
+        <h2>Pace</h2>
+        <p className="panel-title">Race Pace Comparison</p>
+        <div className="driver-pickers">
           {[0, 1].map((slot) => (
             <label key={slot}>
-              Driver {slot + 1}:{" "}
+              Driver {slot + 1}
               <select
                 value={paceDrivers[slot] || ""}
                 onChange={(e) => {
@@ -95,12 +107,13 @@ export default function App() {
             </label>
           ))}
         </div>
-        {paceData ? <PaceChart data={paceData} /> : <p>Loading...</p>}
+        {paceData ? <PaceChart data={paceData} /> : <p className="loading-msg">Loading...</p>}
       </section>
 
-      <section>
-        <h2>Pit Stops</h2>
-        {pitData ? <PitStopTable data={pitData} /> : <p>Loading...</p>}
+      <section className="panel">
+        <h2>Stops</h2>
+        <p className="panel-title">Pit Stops</p>
+        {pitData ? <PitStopTable data={pitData} /> : <p className="loading-msg">Loading...</p>}
       </section>
     </div>
   );

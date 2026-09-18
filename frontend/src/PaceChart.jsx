@@ -1,6 +1,5 @@
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ReferenceLine,
@@ -10,7 +9,12 @@ import {
   YAxis,
 } from "recharts";
 
-const DRIVER_COLORS = ["#0067AD", "#DA291C", "#43B02A", "#FFD12E"];
+const DRIVER_COLORS = ["#3ea6ff", "#ff3b30", "#4ade80", "#ffd12e"];
+const AXIS_COLOR = "#9a9aab";
+const GRID_COLOR = "#2a2a38";
+const Y_AXIS_WIDTH = 80;
+const MARGIN_LEFT = 16;
+const MARGIN_RIGHT = 24;
 
 export default function PaceChart({ data }) {
   if (!data) return null;
@@ -34,31 +38,94 @@ export default function PaceChart({ data }) {
   });
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={rows} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
-        <CartesianGrid strokeOpacity={0.3} />
-        <XAxis dataKey="lap" label={{ value: "Lap", position: "insideBottom", offset: -5 }} />
-        <YAxis
-          label={{ value: `Rolling avg (s), window=${data.window}`, angle: -90, position: "insideLeft" }}
-          domain={["auto", "auto"]}
-        />
-        <Tooltip />
-        <Legend />
-        {drivers.map((driver, i) => (
-          <Line
-            key={driver}
-            type="monotone"
-            dataKey={driver}
-            stroke={DRIVER_COLORS[i % DRIVER_COLORS.length]}
-            dot={false}
-            strokeWidth={2}
-            connectNulls
+    <div>
+      <ResponsiveContainer width="100%" height={420}>
+        <LineChart
+          data={rows}
+          margin={{ top: 16, right: MARGIN_RIGHT, bottom: 24, left: MARGIN_LEFT }}
+        >
+          <CartesianGrid stroke={GRID_COLOR} strokeOpacity={0.6} vertical={false} />
+          <XAxis
+            dataKey="lap"
+            tick={{ fill: AXIS_COLOR, fontSize: 12 }}
+            stroke={GRID_COLOR}
+            tickLine={false}
+            label={{
+              value: "Lap",
+              position: "bottom",
+              offset: 0,
+              fill: AXIS_COLOR,
+              fontSize: 12,
+            }}
           />
+          <YAxis
+            tick={{ fill: AXIS_COLOR, fontSize: 12 }}
+            stroke={GRID_COLOR}
+            tickLine={false}
+            width={Y_AXIS_WIDTH}
+            domain={["auto", "auto"]}
+            label={{
+              value: `Rolling avg (s), window=${data.window}`,
+              angle: -90,
+              position: "left",
+              offset: 8,
+              style: { textAnchor: "middle" },
+              fill: AXIS_COLOR,
+              fontSize: 12,
+            }}
+          />
+          <Tooltip
+            contentStyle={{
+              background: "#1c1c26",
+              border: "1px solid #2a2a38",
+              borderRadius: 8,
+              color: "#f5f5f7",
+              fontSize: 13,
+            }}
+            labelStyle={{ color: "#9a9aab" }}
+          />
+          {drivers.map((driver, i) => (
+            <Line
+              key={driver}
+              type="monotone"
+              dataKey={driver}
+              stroke={DRIVER_COLORS[i % DRIVER_COLORS.length]}
+              dot={false}
+              strokeWidth={2.5}
+              connectNulls
+            />
+          ))}
+          {data.crossovers.map((lap) => (
+            <ReferenceLine key={lap} x={lap} stroke="#5a5a6a" strokeDasharray="4 4" />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 24,
+          marginTop: 12,
+          marginLeft: Y_AXIS_WIDTH + MARGIN_LEFT,
+          marginRight: MARGIN_RIGHT,
+          fontSize: 13,
+        }}
+      >
+        {drivers.map((driver, i) => (
+          <div key={driver} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span
+              style={{
+                display: "inline-block",
+                width: 14,
+                height: 3,
+                borderRadius: 2,
+                background: DRIVER_COLORS[i % DRIVER_COLORS.length],
+              }}
+            />
+            <span style={{ color: "var(--text)" }}>{driver}</span>
+          </div>
         ))}
-        {data.crossovers.map((lap) => (
-          <ReferenceLine key={lap} x={lap} stroke="#888" strokeDasharray="4 4" />
-        ))}
-      </LineChart>
-    </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
